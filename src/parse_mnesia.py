@@ -1,12 +1,8 @@
-#readRDQ.py
-# This is the one that works quite well.  
-#Need to do these:
+# many ideas taken from https://github.com/jeffbryner/rdqdump
+#  - reading bytes from files
+#  - convert_hex
+#  - using find on the hex string to locate messages
 
-# test on other files
-# fine tune the near the end of file criteria
-# be able to write data to a file
-
-# python3 -i readqueuenane.py
 import os
 import sys
 import io
