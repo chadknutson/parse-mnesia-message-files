@@ -6,9 +6,21 @@
 import os
 import sys
 import io
-from optparse import OptionParser
+import argparse
 import json
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-file', help='choose file to parse', default='no file')
+parser.add_argument('-chunk', help='byte count for each file chunk to read (default=1028)', default=1028)
+parser.add_argument('-o', help='filename (no extension) for file; print for print to terminal', default='print')
+args = parser.parse_args()
+
+if args.file == 'no file':
+	print('[ERROR] please specify a file name to parse using "-file filename"')
+	sys.exit()
+#print(file)
+#print(args['file'])
 
 # TODO : set allow user to specify the file
 vhosts = ['23GGHMUBU0M53JQSJA0D1RLN4','52EPDX2M6A2FXCJA589KMI773','DYMMNWGOXAPNGDT65THSYNKDH','2KVL28AS0JEHD0UYQNDTX3QIO','628WB79CIFDYO9LJI6DKMI09L']
@@ -17,9 +29,10 @@ root_dir = '/usr/local/var/lib/rabbitmq/mnesia/rabbit/msg_stores/vhosts/'
 rqdfile = '/msg_store_persistent/0.rdq'
 fileName = root_dir + vhosts[host_id] + '/msg_store_persistent/0.rdq'
 
+fileName = args.file
 
-fileName='/usr/local/var/lib/rabbitmq/mnesia/rabbit/msg_stores/vhosts/2KVL28AS0JEHD0UYQNDTX3QIO/queues/7NJWTXU5MSR21TJGJEOA2NPC2/0.idx'
-print(fileName)
+#fileName='/usr/local/var/lib/rabbitmq/mnesia/rabbit/msg_stores/vhosts/2KVL28AS0JEHD0UYQNDTX3QIO/queues/7NJWTXU5MSR21TJGJEOA2NPC2/0.idx'
+print('Reading file: ' + fileName)
 
 
 def readChunk(data,start,end):
@@ -117,7 +130,14 @@ while moreBytes:
 	
 
 # TODO: output data to json file or other
-print(messages)
-print(exchanges)
+if args.o != 'print':
+	output = tuple(zip(exchanges, messages)) 
+	outFile = args.o + '.json'
+	with open(outFile, 'w', encoding='utf-8') as f:
+		json.dump(output, f, ensure_ascii=False, indent=4)
+	print('Data saved as: ' + outFile)
+else :
+	print(messages)
+	print(exchanges)
 
 
