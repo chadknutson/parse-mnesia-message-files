@@ -7,8 +7,9 @@ import os
 import sys
 import io
 import argparse
-import json
+import json, time
 
+t0 = time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-file', help='choose file to parse', default='no file')
@@ -94,11 +95,16 @@ def grabMessages(data, messageHex, exchangeHex, initial_type):
 				moreBytes=False
 	return {'messages': message_list, 'exchanges': exchange_list, 'remaining_data': cutData, 'current_type': content_type}
 
-
+# hex string that indicates message 
+# Matching binary might be faster
+msgBin = b'9_1l\x00\x00\x00\x01m\x00\x00'
 msgHex = "395f316c000000016d0000"
+# hex string that indicates exchange name
 exchangeHex = '000000006C000000016D0000'
+xchBin = b'\x00\x00\x00\x00l\x00\x00\x00\x01m\x00\x00'
 
-byteChunk = 2**16
+
+byteChunk = 2**19
 src=open(fileName,'rb')
 startByte=0
 fileByteCount = os.path.getsize(fileName)
@@ -117,20 +123,24 @@ while moreBytes:
 	messages+= resp['messages']
 	exchanges += resp['exchanges']
 	initial_type = resp['current_type']
-	if src.tell() >= byteChunk:
+	if src.tell() >= fileByteCount:
 		moreBytes = False
 		src.close()
 	else:
 		ctr+=1
-		if ctr > 40:
-			moreBytes=False
+		#if ctr > 40:
+		#	moreBytes=False
 		dataChunk = readChunk(src,src.tell(),byteChunk)
-		print(src.tell())
+		print(round(src.tell()/fileByteCount,3))
 		data = oldData + dataChunk
 	
 
-# TODO: output data to json file or other
+print("parse time: {0}".format(time.time()-t0))
+print("Number of chunks read: {0}".format(ctr))
+print("Number of messages: {0}".format(len(messages)))
+
 if args.o != 'print':
+	# output data to json file or other
 	output = tuple(zip(exchanges, messages)) 
 	outFile = args.o + '.json'
 	with open(outFile, 'w', encoding='utf-8') as f:
