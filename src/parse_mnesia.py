@@ -48,19 +48,18 @@ def convert_hex(string):
 
 
 def extractString(data, hexString, byteLengthHex):
-	hexdata=convert_hex(data)
-	dataPos=hexdata.find(hexString.upper())
+	dataPos = data.find(bytes.fromhex(hexString))
 	if dataPos == -1:
 		found=False
 		unescapedData=''
 		endPosition = -1
 	else:
 		found=True
-		startofMatch=round(dataPos/2)
+		startofMatch=round(dataPos)
 		recordSize = data[startofMatch+byteLengthHex:startofMatch+byteLengthHex+2]
-		rdqEntryLength = int(convert_hex(recordSize), 16)
+		rdqEntryLength = int.from_bytes(recordSize, "big")
 		dataMessage = data[startofMatch+byteLengthHex+2: startofMatch+byteLengthHex+2+rdqEntryLength]
-		unescapedData = dataMessage.decode('ascii', 'ignore')
+		unescapedData = dataMessage.decode('utf-8', 'strict')
 		endPosition =  startofMatch+byteLengthHex+2+rdqEntryLength
 	return {"string": unescapedData, "endpos": endPosition, 'found':found}
 
