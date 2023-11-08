@@ -15,6 +15,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-file', help='choose file to parse', default='no file')
 parser.add_argument('-chunk', help='byte count for each file chunk to read (default=1028)', default=1028)
 parser.add_argument('-o', help='filename (no extension) for file; print for print to terminal', default='print')
+parser.add_argument('-be', help='byte endianess for lenght, e.g. big, little', default="big")
+parser.add_argument("-e", help="encoding, e.g. utf-8, ascii", default="utf-8")
+parser.add_argument("-ee", help="encoding errors, e.g. strict, ignore", default="strict")
 args = parser.parse_args()
 
 if args.file == 'no file':
@@ -31,6 +34,10 @@ rqdfile = '/msg_store_persistent/0.rdq'
 fileName = root_dir + vhosts[host_id] + '/msg_store_persistent/0.rdq'
 
 fileName = args.file
+
+endianness = args.be
+encoding = args.e
+encoding_errors = args.ee
 
 #fileName='/usr/local/var/lib/rabbitmq/mnesia/rabbit/msg_stores/vhosts/2KVL28AS0JEHD0UYQNDTX3QIO/queues/7NJWTXU5MSR21TJGJEOA2NPC2/0.idx'
 print('Reading file: ' + fileName)
@@ -57,9 +64,9 @@ def extractString(data, hexString, byteLengthHex):
 		found=True
 		startofMatch=round(dataPos)
 		recordSize = data[startofMatch+byteLengthHex:startofMatch+byteLengthHex+2]
-		rdqEntryLength = int.from_bytes(recordSize, "big")
+		rdqEntryLength = int.from_bytes(recordSize, endianness)
 		dataMessage = data[startofMatch+byteLengthHex+2: startofMatch+byteLengthHex+2+rdqEntryLength]
-		unescapedData = dataMessage.decode('utf-8', 'strict')
+		unescapedData = dataMessage.decode(encoding, encoding_errors)
 		endPosition =  startofMatch+byteLengthHex+2+rdqEntryLength
 	return {"string": unescapedData, "endpos": endPosition, 'found':found}
 
